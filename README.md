@@ -1,3 +1,46 @@
+# Kronos_Fin
+
+A ready-to-run copy of [shiyu-coder/Kronos](https://github.com/shiyu-coder/Kronos) (commit `67b630e`), a foundation model for financial K-line (candlestick) forecasting, with a simple setup script and command-line runner.
+
+## Quick start
+
+```bash
+# 1. Install (Python 3.10 to 3.13). Creates .venv and installs PyTorch + deps
+./setup.sh          # or: ./setup.sh --cpu   for a smaller CPU-only PyTorch
+
+# 2. Activate
+source .venv/bin/activate
+
+# 3. Offline check: tiny random-weight models, no internet needed
+pytest tests/test_smoke_offline.py
+
+# 4. Real forecast: downloads pretrained weights from Hugging Face on first run
+python run_prediction.py                                   # bundled sample data
+python run_prediction.py --csv my_stock.csv --model small --lookback 400 --pred-len 60
+```
+
+`run_prediction.py` writes `outputs/<name>_forecast.csv` and `outputs/<name>_forecast.png`.
+If the CSV has rows after the lookback window, they are plotted as ground truth (a backtest); otherwise future timestamps are extrapolated from the bar interval.
+
+**Input CSV format:** `timestamps,open,high,low,close[,volume,amount]`
+
+| `--model` | Hugging Face weights | Max context |
+|---|---|---|
+| `mini`  | NeoQuasar/Kronos-mini + Kronos-Tokenizer-2k | 2048 |
+| `small` | NeoQuasar/Kronos-small + Kronos-Tokenizer-base | 512 |
+| `base`  | NeoQuasar/Kronos-base + Kronos-Tokenizer-base | 512 |
+
+Full regression tests (needs access to huggingface.co): `pytest tests`
+
+### Notes vs. upstream
+- `pandas` pin relaxed to `>=2.2.2` so it installs on Python 3.13 (2.2.2 has no 3.13 wheels).
+- The upstream `examples/prediction_example.py` reads `examples/data/XSHG_5min_600977.csv`, which is not in the upstream repo; use `run_prediction.py` instead, or put your own CSV there.
+- Added `pytest.ini` so `pytest` works from the repo root.
+
+---
+
+*Original Kronos README follows.*
+
 <div align="center">
   <h2><b>Kronos: A Foundation Model for the Language of Financial Markets </b></h2>
 </div>
